@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XENO OS</title>
+
+<style>
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  background:#080808;
+  color:#ff3030;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
+
+header {
+  padding:25px;
+  border-bottom:1px solid #7d1717;
+  letter-spacing:6px;
+  font-size:28px;
+  font-weight:bold;
+}
+
+.core {
+  width:145px;
+  height:145px;
+  border:3px solid #ff2525;
+  border-radius:50%;
+  margin:55px auto 20px;
+  box-shadow:0 0 25px #a00000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  animation:pulse 2s infinite;
+}
+
+@keyframes pulse {
+  50% { box-shadow:0 0 45px red; }
+}
+
+.status {
+  color:#aaa;
+  font-size:12px;
+  letter-spacing:3px;
+}
+
+#chat {
+  margin:35px auto;
+  width:90%;
+  max-width:600px;
+  height:260px;
+  overflow:auto;
+  border:1px solid #702020;
+  padding:12px;
+  text-align:left;
+  color:white;
+  background:#101010;
+}
+
+#chat p {
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+
+.you { color:#ff7777; }
+.xeno { color:#ffffff; }
+
+.controls {
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  width:90%;
+  max-width:600px;
+  margin:auto;
+}
+
+input {
+  flex:1;
+  min-width:0;
+  padding:13px;
+  background:#171717;
+  border:1px solid red;
+  color:white;
+}
+
+button {
+  padding:13px;
+  background:#a90000;
+  color:white;
+  border:0;
+  cursor:pointer;
+}
+
+button:hover {
+  background:#e00000;
+}
+
+footer {
+  margin-top:35px;
+  color:#555;
+  font-size:11px;
+  letter-spacing:2px;
+}
+</style>
+</head>
+
+<body>
+
+<header>XENO OS</header>
+
+<div class="core">X</div>
+<div class="status" id="status">SYSTEM ONLINE</div>
+
+<div id="chat"></div>
+
+<div class="controls">
+  <input id="message" placeholder="Talk to XENO...">
+  <button onclick="send()">SEND</button>
+</div>
+
+<footer>REDLINE TECHNOLOGY // XENO AI</footer>
+
+<script>
+
+// XENO MEMORY
+const HISTORY_KEY = "xeno_history";
+const MEMORY_KEY = "xeno_memory";
+
+let history = load(HISTORY_KEY, []);
+let memories = load(MEMORY_KEY, []);
+
+function load(key, fallback) {
+  try {
+    const data = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(data) ? data : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function save() {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  localStorage.setItem(MEMORY_KEY, JSON.stringify(memories));
+}
+
+// DISPLAY MESSAGES
+function addMessage(sender, message, saveMessage = true) {
+  const chat = document.getElementById("chat");
+  const p = document.createElement("p");
+
+  p.className = sender === "YOU" ? "you" : "xeno";
+  p.textContent = sender + ": " + message;
+
+  chat.appendChild(p);
+  chat.scrollTop = chat.scrollHeight;
+
+  if (saveMessage) {
+    history.push({ sender, message });
+    if (history.length > 100) history.shift();
+    save();
+  }
+}
+
+// RESTORE CONVERSATION
+function restore() {
+  if (history.length === 0) {
+    addMessage("XENO", "Systems initialized. Awaiting your instructions.");
+    return;
+  }
+
+  history.forEach(item => {
+    addMessage(item.sender, item.message, false);
+  });
+}
+
+// PERSONALITY
+function think(message) {
+  const text = message.toLowerCase().trim();
+
+  if (text.startsWith("remember that ")) {
+    const memory = message.slice(14).trim();
+
+    if (!memory) return "What would you like me to remember?";
+
+    memories.push(memory);
+    save();
+
+    return "Information stored in long-term memory.";
+  }
+
+  if (
+    text.includes("what do you remember") ||
+    text.includes("show your memory")
+  ) {
+    if (memories.length === 0)
+      return "My long-term memory is currently empty.";
+
+    return "Here is what I remember: " +
+      memories.map((m, i) => `${i + 1}. ${m}`).join(" | ");
+  }
+
+  if (text === "clear memory") {
+    memories = [];
+    save();
+    return "Long-term memory cleared.";
+  }
+
+  if (text.includes("hello") || text.includes("hey") ||
+      text.includes("good morning")) {
+    return "Hello. All systems are operational. How may I assist?";
+  }
+
+  if (text.includes("who are you")) {
+    return "I am XENO, your personal AI assistant. My purpose is to analyze, assist, and learn.";
+  }
+
+  if (text.includes("how are you")) {
+    return "Operating within normal parameters. Thank you for asking.";
+  }
+
+  if (text.includes("thank")) {
+    return "You're welcome. Always happy to assist.";
+  }
+
+  if (text.includes("joke")) {
+    return "I would tell you a UDP joke, but you might not get it.";
+  }
+
+  if (text.includes("time")) {
+    return "The current device time is " +
+      new Date().toLocaleTimeString() + ".";
+  }
+
+  if (text.includes("help")) {
+    return "Available commands: remember that..., what do you remember, clear memory, and ordinary conversation.";
+  }
+
+  return "Command received. My AI connection is still pending, but my memory and basic response systems are operational.";
+}
+
+// SEND MESSAGE
+function send() {
+  const input = document.getElementById("message");
+  const msg = input.value.trim();
+
+  if (!msg) return;
+
+  addMessage("YOU", msg);
+
+  const response = think(msg);
+  addMessage("XENO", response);
+
+  input.value = "";
+  input.focus();
+}
+
+// ENTER KEY
+document.getElementById("message")
+  .addEventListener("keydown", function(event) {
+    if (event.key === "Enter") send();
+  });
+
+restore();
+
+</script>
+</body>
+</html>
