@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XENO OS</title>
+<style>
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:#080808;
+  color:#ff3030;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
+header {
+  padding:25px;
+  border-bottom:1px solid #7d1717;
+  letter-spacing:6px;
+  font-size:28px;
+  font-weight:bold;
+}
+.core {
+  width:145px;
+  height:145px;
+  border:3px solid #ff2525;
+  border-radius:50%;
+  margin:55px auto 20px;
+  box-shadow:0 0 25px #a00000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  50% { box-shadow:0 0 45px red; }
+}
+.status {
+  color:#aaa;
+  font-size:12px;
+  letter-spacing:3px;
+}
+#chat {
+  margin:35px auto;
+  width:90%;
+  max-width:600px;
+  height:220px;
+  overflow:auto;
+  border:1px solid #702020;
+  padding:12px;
+  text-align:left;
+  color:white;
+  background:#101010;
+}
+input {
+  width:65%;
+  padding:13px;
+  background:#171717;
+  border:1px solid red;
+  color:white;
+}
+button {
+  padding:13px;
+  background:#a90000;
+  color:white;
+  border:0;
+}
+footer {
+  margin-top:35px;
+  color:#555;
+  font-size:11px;
+  letter-spacing:2px;
+}
+</style>
+</head>
+<body>
+<header>XENO OS</header>
+
+<div class="core">X</div>
+<div class="status">SYSTEM ONLINE</div>
+
+<div id="chat">
+<p>XENO: Interface initialized.</p>
+<p>XENO: Awaiting your commands.</p>
+</div>
+
+<input id="message" placeholder="Enter command...">
+<button onclick="send()">SEND</button>
+
+<footer>REDLINE TECHNOLOGY // XENO AI</footer>
+
+<script>
+function send() {
+  let input = document.getElementById("message");
+  let chat = document.getElementById("chat");
+  let msg = input.value.trim();
+
+  if (!msg) return;
+
+  chat.innerHTML += "<p>YOU: " +
+    msg.replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;") + "</p>";
+
+  chat.innerHTML +=
+    "<p>XENO: Interface received your command. AI connection pending.</p>";
+
+  input.value = "";
+  chat.scrollTop = chat.scrollHeight;
+}
+</script>
+</body>
+</html>
